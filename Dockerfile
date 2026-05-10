@@ -1,4 +1,4 @@
-# Node dependencies stage
+# Node dependencies stage (fork: ourdatateam — pipeline registration)
 FROM public.ecr.aws/docker/library/node:22-alpine AS frontend-dependencies
 WORKDIR /app
 
