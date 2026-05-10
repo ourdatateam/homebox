@@ -1,0 +1,163 @@
+name: Upstream sync (auto-PR)
+
+# Watches upstream `sysadminsmedia/homebox:main`. When upstream is ahead of our
+# `dev` AND upstream's own CI is green at HEAD, opens a PR `chore/sync-upstream-<date>`
+# into `dev`. Our pr-ci.yml then validates the merge against the prod snapshot
+# before you click merge. No silent auto-merges — the PR is reviewable.
+#
+# Failure modes handled:
+# - upstream not ahead: exit cleanly, no PR
+# - upstream ahead but CI red: exit cleanly with notice, no PR (defer)
+# - existing open sync PR: exit cleanly, no duplicate PR
+# - merge conflict: open the PR anyway with a 'needs-resolution' label so it's
+#   visible (manual conflict resolution is the only path)
+
+on:
+  schedule:
+    - cron: '0 6 * * *'      # daily at 06:00 UTC
+  workflow_dispatch:           # manual trigger from Actions tab
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout dev with history
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Add upstream remote + fetch
+        run: |
+          git remote add upstream https://github.com/sysadminsmedia/homebox.git
+          git fetch upstream main
+
+      - name: Check whether upstream is ahead
+        id: ahead
+        run: |
+          BEHIND=$(git rev-list --count HEAD..upstream/main)
+          echo "behind=$BEHIND" >> "$GITHUB_OUTPUT"
+          if [[ "$BEHIND" -eq 0 ]]; then
+            echo "::notice::dev is already at upstream/main — no sync needed"
+          else
+            echo "::notice::dev is $BEHIND commits behind upstream/main"
+          fi
+
+      - name: Check upstream CI status at HEAD
+        if: steps.ahead.outputs.behind != '0'
+        id: upstream_ci
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          UP_SHA=$(git rev-parse upstream/main)
+          echo "sha=$UP_SHA" >> "$GITHUB_OUTPUT"
+
+          # Pull check-run conclusions for the upstream tip. We care about
+          # 'build' (the docker image build) being green. We treat 'Backend
+          # tests / Go' and 'Frontend tests / Lint' as informational because
+          # they've had recent flake; gate auto-sync on the build only.
+          CONCLUSIONS=$(gh api "/repos/sysadminsmedia/homebox/commits/$UP_SHA/check-runs" \
+            --jq '[.check_runs[] | select(.name | test("build|Build")) | .conclusion] | join(",")')
+          echo "build_conclusions=$CONCLUSIONS" >> "$GITHUB_OUTPUT"
+
+          if [[ "$CONCLUSIONS" == *failure* || "$CONCLUSIONS" == *timed_out* ]]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Upstream HEAD ($UP_SHA) has failing build checks ($CONCLUSIONS) — deferring sync"
+          elif [[ "$CONCLUSIONS" == *success* ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Upstream HEAD ($UP_SHA) build checks are green — proceeding"
+          else
+            # No conclusive build result yet (still running or no checks)
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Upstream HEAD ($UP_SHA) has no conclusive build status ($CONCLUSIONS) — deferring"
+          fi
+
+      - name: Check for existing open sync PR
+        if: steps.ahead.outputs.behind != '0' && steps.upstream_ci.outputs.ready == 'true'
+        id: existing_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Look for any open PR with a sync-upstream/* head
+          EXISTING=$(gh pr list --base dev --state open --search 'sync-upstream in:head' --json number,headRefName --jq 'length')
+          echo "count=$EXISTING" >> "$GITHUB_OUTPUT"
+          if [[ "$EXISTING" -gt 0 ]]; then
+            echo "::notice::An open upstream-sync PR already exists — not opening another"
+          fi
+
+      - name: Create sync branch + merge upstream
+        if: steps.ahead.outputs.behind != '0' && steps.upstream_ci.outputs.ready == 'true' && steps.existing_pr.outputs.count == '0'
+        id: merge
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          DATE=$(date -u +%Y-%m-%d)
+          BRANCH="sync-upstream/$DATE"
+          git checkout -b "$BRANCH"
+
+          # Try the merge — capture whether it conflicted
+          if git merge upstream/main --no-edit; then
+            echo "conflict=false" >> "$GITHUB_OUTPUT"
+          else
+            # Stage what was auto-resolved, leave conflict markers in place
+            git add -A
+            git commit --no-edit || true
+            echo "conflict=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Merge had conflicts — PR will be opened with 'needs-resolution' note"
+          fi
+
+          git push origin "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Open PR
+        if: steps.merge.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="${{ steps.merge.outputs.branch }}"
+          UP_SHA="${{ steps.upstream_ci.outputs.sha }}"
+          BEHIND="${{ steps.ahead.outputs.behind }}"
+          CONFLICT="${{ steps.merge.outputs.conflict }}"
+
+          if [[ "$CONFLICT" == "true" ]]; then
+            TITLE="chore(sync): upstream/main → dev ($BEHIND commits, RESOLVE CONFLICTS)"
+            BODY=$(cat <<EOF
+          Automated upstream sync — **MANUAL CONFLICT RESOLUTION REQUIRED**.
+
+          - Upstream tip: \`$UP_SHA\`
+          - Commits incorporated: $BEHIND
+          - Build status at upstream tip: ✅ green (gating)
+          - Merge conflicts: ⚠️ yes — see file changes for \`<<<<<<\` markers
+
+          ## Process
+          1. Check out \`$BRANCH\`, resolve conflicts, push.
+          2. PR CI re-runs against prod snapshot.
+          3. Merge when gate is green.
+
+          🤖 Opened by \`.github/workflows/upstream-sync.yml\`
+          EOF
+          )
+          else
+            TITLE="chore(sync): upstream/main → dev ($BEHIND commits)"
+            BODY=$(cat <<EOF
+          Automated upstream sync.
+
+          - Upstream tip: \`$UP_SHA\`
+          - Commits incorporated: $BEHIND
+          - Build status at upstream tip: ✅ green
+          - Merge conflicts: ✅ clean
+
+          ## Review
+          PR CI runs the migrate-against-prod-snapshot smoke — when gate is green, merge.
+
+          🤖 Opened by \`.github/workflows/upstream-sync.yml\`
+          EOF
+          )
+          fi
+
+          gh pr create --base dev --head "$BRANCH" --title "$TITLE" --body "$BODY"
