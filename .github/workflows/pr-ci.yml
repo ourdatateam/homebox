@@ -1,0 +1,101 @@
+name: PR CI
+
+on:
+  pull_request:
+    branches: [dev, prod]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'Dockerfile'
+      - '.github/workflows/pr-ci.yml'
+      - '.github/workflows/partial-backend.yaml'
+      - '.github/workflows/partial-frontend.yaml'
+      - '.github/workflows/e2e-partial.yaml'
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  backend-tests:
+    name: Backend tests
+    uses: ./.github/workflows/partial-backend.yaml
+
+  frontend-tests:
+    name: Frontend tests
+    uses: ./.github/workflows/partial-frontend.yaml
+
+  migrate-against-prod-snapshot:
+    name: Migrate + smoke against prod snapshot
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: homebox
+          POSTGRES_PASSWORD: ci-throwaway
+          POSTGRES_DB: homebox
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U homebox -d homebox"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pg_restore
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client-17
+
+      - name: Pull latest prod snapshot
+        env:
+          TOKEN:    ${{ secrets.SNAPSHOT_DOWNLOAD_TOKEN }}
+          BASE_URL: ${{ secrets.SNAPSHOT_DOWNLOAD_URL }}
+        run: |
+          if [[ -z "$BASE_URL" ]]; then
+            echo "::warning::SNAPSHOT_DOWNLOAD_URL secret not set — running against empty DB"
+            exit 0
+          fi
+          mkdir -p /tmp/snap
+          curl -fsSL -H "Authorization: Bearer $TOKEN" \
+            "$BASE_URL/latest.dump" -o /tmp/snap/latest.dump
+
+      - name: Restore snapshot into CI Postgres
+        if: hashFiles('/tmp/snap/latest.dump') != ''
+        env:
+          PGPASSWORD: ci-throwaway
+        run: |
+          pg_restore -h localhost -U homebox -d homebox \
+            --jobs=4 --no-owner --no-acl /tmp/snap/latest.dump
+
+      - name: Build PR image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          load: true
+          tags: homebox-pr:${{ github.sha }}
+          cache-from: type=gha
+
+      - name: Boot homebox against restored DB (validates migrations)
+        run: |
+          docker run --rm -d --name homebox-pr \
+            --network host \
+            -e HBOX_DATABASE_DRIVER=postgres \
+            -e HBOX_DATABASE_HOST=localhost \
+            -e HBOX_DATABASE_PORT=5432 \
+            -e HBOX_DATABASE_USERNAME=homebox \
+            -e HBOX_DATABASE_PASSWORD=ci-throwaway \
+            -e HBOX_DATABASE_DATABASE=homebox \
+            -e HBOX_DATABASE_SSL_MODE=disable \
+            homebox-pr:${{ github.sha }}
+          for i in {1..30}; do
+            if curl -fsS http://localhost:7745/api/v1/status; then
+              echo "Healthy"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Homebox didn't come up — dumping logs"
+          docker logs homebox-pr
+          exit 1
