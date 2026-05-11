@@ -30,11 +30,14 @@ async function openCreateItemModal(page: Page) {
   // Quick menu shortcut Ctrl+` opens command palette; alternatively use the "+" button.
   // For test stability use the explicit Add Item route.
   await page.goto("/items");
-  await page.getByTestId("create-item-button").click().catch(async () => {
-    // Fall back: open via quick menu if there's no data-testid yet.
-    await page.keyboard.press("Control+Backquote");
-    await page.getByRole("option", { name: /create item|new item/i }).click();
-  });
+  await page
+    .getByTestId("create-item-button")
+    .click()
+    .catch(async () => {
+      // Fall back: open via quick menu if there's no data-testid yet.
+      await page.keyboard.press("Control+Backquote");
+      await page.getByRole("option", { name: /create item|new item/i }).click();
+    });
   await expect(page.getByRole("dialog", { name: /create item/i })).toBeVisible();
 }
 

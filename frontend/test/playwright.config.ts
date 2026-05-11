@@ -20,10 +20,7 @@ export default defineConfig({
         // Synthetic video device + auto-grant permission prompt for camera tests.
         // Headed runs against a real device should pass --no-use-fake-device on the CLI.
         launchOptions: {
-          args: [
-            "--use-fake-ui-for-media-stream",
-            "--use-fake-device-for-media-stream",
-          ],
+          args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"],
         },
       },
     },
