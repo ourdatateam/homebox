@@ -49,6 +49,7 @@ export type UseCameraCapture = {
   setTorch: (on: boolean) => Promise<void>;
   setExposureCompensation: (value: number) => Promise<void>;
   snap: (video: HTMLVideoElement, canvas: HTMLCanvasElement, opts?: SnapOptions) => string;
+  rotateDataURL: (dataURL: string, direction: "cw" | "ccw", quality?: number) => Promise<string>;
 };
 
 export function useCameraCapture(): UseCameraCapture {
@@ -299,6 +300,32 @@ export function useCameraCapture(): UseCameraCapture {
     () => !!capabilities.value.exposureCompensation && !!capabilities.value.exposureMode?.includes("manual")
   );
 
+  /**
+   * Rotates a JPEG dataURL 90° in the given direction. Returns a fresh
+   * JPEG dataURL. Pure helper — does not touch the stream.
+   */
+  function rotateDataURL(dataURL: string, direction: "cw" | "ccw", quality = DEFAULT_QUALITY): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.height;
+        canvas.height = img.width;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("canvas-2d-unavailable"));
+          return;
+        }
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((direction === "cw" ? 90 : -90) * (Math.PI / 180));
+        ctx.drawImage(img, -img.width / 2, -img.height / 2);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = () => reject(new Error("image-decode-failed"));
+      img.src = dataURL;
+    });
+  }
+
   return {
     stream,
     devices,
@@ -316,6 +343,7 @@ export function useCameraCapture(): UseCameraCapture {
     setTorch,
     setExposureCompensation,
     snap,
+    rotateDataURL,
   };
 }
 

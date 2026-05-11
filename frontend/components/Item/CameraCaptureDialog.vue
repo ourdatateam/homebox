@@ -123,6 +123,26 @@
           </Button>
         </template>
         <template v-else>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            :aria-label="$t('components.item.camera_capture.rotate_ccw')"
+            :disabled="rotating"
+            @click="onRotate('ccw')"
+          >
+            <MdiRotateLeft class="size-5" />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            :aria-label="$t('components.item.camera_capture.rotate_cw')"
+            :disabled="rotating"
+            @click="onRotate('cw')"
+          >
+            <MdiRotateRight class="size-5" />
+          </Button>
           <Button type="button" variant="outline" @click="onRetake">
             <MdiRefresh class="mr-2 size-4" />
             {{ $t("components.item.camera_capture.retake") }}
@@ -194,6 +214,8 @@
   import MdiFlash from "~icons/mdi/flash";
   import MdiFlashOff from "~icons/mdi/flash-off";
   import MdiRefresh from "~icons/mdi/refresh";
+  import MdiRotateLeft from "~icons/mdi/rotate-left";
+  import MdiRotateRight from "~icons/mdi/rotate-right";
 
   type CapturedPhoto = { photoName: string; fileBase64: string; file: File };
 
@@ -206,6 +228,7 @@
   const reviewDataURL = ref<string>("");
   const captured = ref<CapturedPhoto[]>([]);
   const snapping = ref(false);
+  const rotating = ref(false);
   const torchOn = ref(false);
   const zoomValue = ref(1);
   const exposureValue = ref(0);
@@ -294,6 +317,16 @@
   function onRetake() {
     reviewDataURL.value = "";
     isReviewing.value = false;
+  }
+
+  async function onRotate(direction: "cw" | "ccw") {
+    if (!reviewDataURL.value || rotating.value) return;
+    rotating.value = true;
+    try {
+      reviewDataURL.value = await cap.rotateDataURL(reviewDataURL.value, direction);
+    } finally {
+      rotating.value = false;
+    }
   }
 
   function onKeep() {
