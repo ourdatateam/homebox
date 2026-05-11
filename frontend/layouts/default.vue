@@ -8,7 +8,6 @@
     <ModalConfirm />
     <OutdatedModal v-if="status" :status="status" />
     <ItemCreateModal />
-    <ItemCameraCaptureDialog />
     <WipeInventoryDialog />
     <TagCreateModal />
     <LocationCreateModal />
@@ -276,7 +275,6 @@
   import ModalConfirm from "~/components/ModalConfirm.vue";
   import OutdatedModal from "~/components/App/OutdatedModal.vue";
   import ItemCreateModal from "~/components/Item/CreateModal.vue";
-  import ItemCameraCaptureDialog from "~/components/Item/CameraCaptureDialog.vue";
   import WipeInventoryDialog from "~/components/WipeInventoryDialog.vue";
 
   import TagCreateModal from "~/components/Tag/CreateModal.vue";

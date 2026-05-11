@@ -286,6 +286,7 @@
         </div>
       </div>
     </form>
+    <ItemCameraCaptureDialog :open="cameraOpen" @update:open="cameraOpen = $event" @capture="onCameraCaptured" />
   </BaseModal>
 </template>
 
@@ -308,6 +309,7 @@
   import MdiBarcode from "~icons/mdi/barcode";
   import MdiBarcodeScan from "~icons/mdi/barcode-scan";
   import MdiCamera from "~icons/mdi/camera";
+  import ItemCameraCaptureDialog from "~/components/Item/CameraCaptureDialog.vue";
   import MdiPackageVariant from "~icons/mdi/package-variant";
   import MdiPackageVariantClosed from "~icons/mdi/package-variant-closed";
   import MdiDelete from "~icons/mdi/delete";
@@ -547,21 +549,21 @@
     form.photos.splice(index, 1);
   }
 
+  const cameraOpen = ref(false);
+
   function openCameraCapture() {
-    openDialog(DialogID.CameraCapture, {
-      params: { mode: "create" },
-      onClose: result => {
-        if (!result || !result.photos?.length) return;
-        for (const p of result.photos) {
-          form.photos.push({
-            photoName: p.photoName,
-            fileBase64: p.fileBase64,
-            file: p.file,
-            primary: form.photos.length === 0,
-          });
-        }
-      },
-    });
+    cameraOpen.value = true;
+  }
+
+  function onCameraCaptured(photos: Array<{ photoName: string; fileBase64: string; file: File }>) {
+    for (const p of photos) {
+      form.photos.push({
+        photoName: p.photoName,
+        fileBase64: p.fileBase64,
+        file: p.file,
+        primary: form.photos.length === 0,
+      });
+    }
   }
 
   function setPrimary(index: number) {
