@@ -5,10 +5,10 @@
   import type { ItemAttachment, EntityFieldData, EntityOut, EntityUpdate } from "~~/lib/api/types/data-contracts";
   import { AttachmentTypes } from "~~/lib/api/types/non-generated";
   import { useTagStore } from "~/stores/tags";
-  import { useLocationStore } from "~~/stores/locations";
   import MdiLoading from "~icons/mdi/loading";
   import MdiDelete from "~icons/mdi/delete";
   import MdiPencil from "~icons/mdi/pencil";
+  import MdiCamera from "~icons/mdi/camera";
   import MdiContentSaveOutline from "~icons/mdi/content-save-outline";
   import MdiImageOutline from "~icons/mdi/image-outline";
   import MdiOpenInNew from "~icons/mdi/open-in-new";
@@ -46,9 +46,6 @@
   const preferences = useViewPreferences();
 
   const itemId = computed<string>(() => route.params.id as string);
-
-  const locationStore = useLocationStore();
-  const locations = computed(() => locationStore.allLocations);
 
   const tagStore = useTagStore();
   const tags = computed(() => tagStore.tags);
@@ -312,6 +309,18 @@
     }
 
     uploadAttachment([first], null);
+  }
+
+  function openCameraForAttachment() {
+    openDialog(DialogID.CameraCapture, {
+      params: { mode: "attach", itemId: itemId.value },
+      onClose: async result => {
+        if (!result || !result.photos?.length) return;
+        for (const p of result.photos) {
+          await uploadAttachment([p.file], AttachmentTypes.Photo);
+        }
+      },
+    });
   }
 
   const dropPhoto = (files: File[] | null) => uploadAttachment(files, AttachmentTypes.Photo);
@@ -770,15 +779,26 @@
               <DropZone data-link-type="attachment" @drop="dropAttachment"> {{ $t("items.attachments") }} </DropZone>
               <DropZone data-link-type="receipt" @drop="dropReceipt"> {{ $t("items.receipts") }} </DropZone>
             </div>
-            <button
-              v-else
-              data-link-type="attachment"
-              class="grid h-24 w-full place-content-center border-2 border-dashed border-primary"
-              @click="clickUpload"
-            >
-              <input ref="refAttachmentInput" hidden type="file" @change="uploadImage" />
-              <p>{{ $t("items.drag_and_drop") }}</p>
-            </button>
+            <div v-else class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <button
+                data-link-type="attachment"
+                class="grid h-24 w-full place-content-center border-2 border-dashed border-primary"
+                @click="clickUpload"
+              >
+                <input ref="refAttachmentInput" hidden type="file" @change="uploadImage" />
+                <p>{{ $t("items.drag_and_drop") }}</p>
+              </button>
+              <button
+                type="button"
+                class="grid h-24 w-full place-content-center border-2 border-dashed border-primary"
+                @click="openCameraForAttachment"
+              >
+                <div class="flex flex-col items-center gap-1">
+                  <MdiCamera class="size-6" />
+                  <p>{{ $t("components.item.create_modal.take_photos") }}</p>
+                </div>
+              </button>
+            </div>
           </div>
 
           <div class="border-t p-4">

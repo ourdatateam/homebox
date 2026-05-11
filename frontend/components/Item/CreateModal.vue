@@ -176,19 +176,25 @@
         <Label for="image-create-photo" class="flex w-full px-1">
           {{ $t("components.item.create_modal.item_photo") }}
         </Label>
-        <div class="relative inline-block">
-          <Button type="button" variant="outline" class="w-full" aria-hidden="true" @click.prevent="">
-            {{ $t("components.item.create_modal.upload_photos") }}
+        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div class="relative inline-block">
+            <Button type="button" variant="outline" class="w-full" aria-hidden="true" @click.prevent="">
+              {{ $t("components.item.create_modal.upload_photos") }}
+            </Button>
+            <Input
+              id="image-create-photo"
+              ref="fileInput"
+              class="absolute left-0 top-0 size-full cursor-pointer opacity-0"
+              type="file"
+              accept="image/png,image/jpeg,image/gif,image/avif,image/webp,android/force-camera-workaround"
+              multiple
+              @change="previewImage"
+            />
+          </div>
+          <Button type="button" variant="outline" class="w-full" @click="openCameraCapture">
+            <MdiCamera class="mr-2 size-4" />
+            {{ $t("components.item.create_modal.take_photos") }}
           </Button>
-          <Input
-            id="image-create-photo"
-            ref="fileInput"
-            class="absolute left-0 top-0 size-full cursor-pointer opacity-0"
-            type="file"
-            accept="image/png,image/jpeg,image/gif,image/avif,image/webp,android/force-camera-workaround"
-            multiple
-            @change="previewImage"
-          />
         </div>
       </div>
       <div class="mt-4 flex flex-row-reverse">
@@ -301,6 +307,7 @@
   import { useLocationStore } from "~~/stores/locations";
   import MdiBarcode from "~icons/mdi/barcode";
   import MdiBarcodeScan from "~icons/mdi/barcode-scan";
+  import MdiCamera from "~icons/mdi/camera";
   import MdiPackageVariant from "~icons/mdi/package-variant";
   import MdiPackageVariantClosed from "~icons/mdi/package-variant-closed";
   import MdiDelete from "~icons/mdi/delete";
@@ -538,6 +545,23 @@
 
   function deleteImage(index: number) {
     form.photos.splice(index, 1);
+  }
+
+  function openCameraCapture() {
+    openDialog(DialogID.CameraCapture, {
+      params: { mode: "create" },
+      onClose: result => {
+        if (!result || !result.photos?.length) return;
+        for (const p of result.photos) {
+          form.photos.push({
+            photoName: p.photoName,
+            fileBase64: p.fileBase64,
+            file: p.file,
+            primary: form.photos.length === 0,
+          });
+        }
+      },
+    });
   }
 
   function setPrimary(index: number) {

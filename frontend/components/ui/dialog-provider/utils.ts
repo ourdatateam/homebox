@@ -11,6 +11,7 @@ import type {
 
 export enum DialogID {
   AttachmentEdit = "attachment-edit",
+  CameraCapture = "camera-capture",
   ChangePassword = "changePassword",
   CreateApiKey = "create-api-key",
   CreateApiKeyResult = "create-api-key-result",
@@ -65,6 +66,7 @@ export type DialogParamsMap = {
     attachmentId: string;
   };
   [DialogID.CreateItem]?: { product?: BarcodeProduct };
+  [DialogID.CameraCapture]?: { mode?: "create" | "attach"; itemId?: string };
   [DialogID.ProductImport]?: { barcode?: string };
   [DialogID.EditMaintenance]:
     | { type: "create"; itemId: string | string[] }
@@ -89,6 +91,9 @@ export type DialogResultMap = {
   [DialogID.ItemChangeDetails]?: boolean;
   [DialogID.WipeInventory]?: { wipeTags: boolean; wipeLocations: boolean; wipeMaintenance: boolean };
   [DialogID.CreateGroupInvite]?: GroupInvitation;
+  [DialogID.CameraCapture]?: {
+    photos: Array<{ photoName: string; fileBase64: string; file: File }>;
+  };
 };
 
 /** Helpers to split IDs by requirement */
