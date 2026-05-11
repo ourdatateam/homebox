@@ -1,6 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 import { fileURLToPath } from "node:url";
 
+// Camera-capture tests need a video device. By default CI uses a synthetic
+// stream via Chrome flags; set REAL_CAMERA=1 to use the actual hardware
+// (only with --headed so the user can grant permission).
+const realCamera = process.env.REAL_CAMERA === "1";
+const chromiumCameraArgs = realCamera ? [] : ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"];
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -15,11 +21,25 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        launchOptions: {
+          args: chromiumCameraArgs,
+        },
+      },
     },
     {
       name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
+      use: {
+        ...devices["Desktop Firefox"],
+        launchOptions: {
+          firefoxUserPrefs: {
+            "media.navigator.permission.disabled": true,
+            // Firefox's fake device: media.getusermedia.fake.devices.* prefs are limited;
+            // camera tests are skipped on FF for now (handled by test.skip if needed).
+          },
+        },
+      },
     },
     {
       name: "webkit",
