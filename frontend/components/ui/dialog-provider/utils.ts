@@ -11,6 +11,7 @@ import type {
 
 export enum DialogID {
   AttachmentEdit = "attachment-edit",
+  CameraCapture = "camera-capture",
   ChangePassword = "changePassword",
   CreateApiKey = "create-api-key",
   CreateApiKeyResult = "create-api-key-result",
@@ -64,7 +65,16 @@ export type DialogParamsMap = {
     itemId: string;
     attachmentId: string;
   };
-  [DialogID.CreateItem]?: { product?: BarcodeProduct };
+  [DialogID.CreateItem]?: {
+    product?: BarcodeProduct;
+    // Photos returned by CameraCapture; appended (not overwriting) to form.photos
+    resumePhotos?: Array<{ photoName: string; fileBase64: string; file: File }>;
+  };
+  [DialogID.CameraCapture]?: {
+    // When set, CameraCapture re-opens this dialog on Done with resumePhotos
+    // (preserves the parent's in-progress form state). Only "create-item" supported.
+    returnTo?: "create-item";
+  };
   [DialogID.ProductImport]?: { barcode?: string };
   [DialogID.EditMaintenance]:
     | { type: "create"; itemId: string | string[] }
@@ -89,6 +99,10 @@ export type DialogResultMap = {
   [DialogID.ItemChangeDetails]?: boolean;
   [DialogID.WipeInventory]?: { wipeTags: boolean; wipeLocations: boolean; wipeMaintenance: boolean };
   [DialogID.CreateGroupInvite]?: GroupInvitation;
+  // CameraCapture's result is only used when returnTo is unset (edit-page flow).
+  [DialogID.CameraCapture]?: {
+    photos: Array<{ photoName: string; fileBase64: string; file: File }>;
+  };
 };
 
 /** Helpers to split IDs by requirement */
