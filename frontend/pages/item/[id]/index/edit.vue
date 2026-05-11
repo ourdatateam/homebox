@@ -9,7 +9,6 @@
   import MdiDelete from "~icons/mdi/delete";
   import MdiPencil from "~icons/mdi/pencil";
   import MdiCamera from "~icons/mdi/camera";
-  import ItemCameraCaptureDialog from "~/components/Item/CameraCaptureDialog.vue";
   import MdiContentSaveOutline from "~icons/mdi/content-save-outline";
   import MdiImageOutline from "~icons/mdi/image-outline";
   import MdiOpenInNew from "~icons/mdi/open-in-new";
@@ -312,16 +311,15 @@
     uploadAttachment([first], null);
   }
 
-  const cameraOpen = ref(false);
-
   function openCameraForAttachment() {
-    cameraOpen.value = true;
-  }
-
-  async function onCameraCaptured(photos: Array<{ photoName: string; fileBase64: string; file: File }>) {
-    for (const p of photos) {
-      await uploadAttachment([p.file], AttachmentTypes.Photo);
-    }
+    openDialog(DialogID.CameraCapture, {
+      onClose: async result => {
+        if (!result || !result.photos?.length) return;
+        for (const p of result.photos) {
+          await uploadAttachment([p.file], AttachmentTypes.Photo);
+        }
+      },
+    });
   }
 
   const dropPhoto = (files: File[] | null) => uploadAttachment(files, AttachmentTypes.Photo);
@@ -1031,6 +1029,5 @@
         </Card>
       </div>
     </section>
-    <ItemCameraCaptureDialog :open="cameraOpen" @update:open="cameraOpen = $event" @capture="onCameraCaptured" />
   </div>
 </template>
