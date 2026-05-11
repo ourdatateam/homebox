@@ -121,8 +121,12 @@ test.describe("Camera capture dialog", () => {
     await page.getByRole("button", { name: /done/i }).click();
     await expect(page.getByRole("dialog", { name: /take photos/i })).toBeHidden();
 
-    // Now the CreateModal photo strip should have 3 entries.
-    // (Existing CreateModal renders each as <img alt="Uploaded Photo">)
+    // Critical: the Create Item dialog must be VISIBLE again (the v-model approach
+    // that we superseded would leave it in the DOM but hidden). getByRole filters
+    // on visibility, so this catches a regression where Done dismissed both dialogs.
+    await expect(page.getByRole("dialog", { name: /create item/i })).toBeVisible();
+
+    // Photo strip rendered inside the now-visible CreateModal.
     await expect(page.locator("img[alt*='Uploaded' i]")).toHaveCount(3);
   });
 
