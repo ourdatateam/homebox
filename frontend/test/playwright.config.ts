@@ -1,6 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 import { fileURLToPath } from "node:url";
 
+// Camera-capture tests need a video device. By default CI uses a synthetic
+// stream via Chrome flags; set REAL_CAMERA=1 to use the actual hardware
+// (only with --headed so the user can grant permission).
+const realCamera = process.env.REAL_CAMERA === "1";
+const chromiumCameraArgs = realCamera ? [] : ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"];
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -17,10 +23,8 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        // Synthetic video device + auto-grant permission prompt for camera tests.
-        // Headed runs against a real device should pass --no-use-fake-device on the CLI.
         launchOptions: {
-          args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"],
+          args: chromiumCameraArgs,
         },
       },
     },

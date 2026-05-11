@@ -27,17 +27,11 @@ async function login(page: Page) {
 }
 
 async function openCreateItemModal(page: Page) {
-  // Quick menu shortcut Ctrl+` opens command palette; alternatively use the "+" button.
-  // For test stability use the explicit Add Item route.
-  await page.goto("/items");
-  await page
-    .getByTestId("create-item-button")
-    .click()
-    .catch(async () => {
-      // Fall back: open via quick menu if there's no data-testid yet.
-      await page.keyboard.press("Control+Backquote");
-      await page.getByRole("option", { name: /create item|new item/i }).click();
-    });
+  // Open via the sidebar's Create dropdown → "Item / Asset" menu entry.
+  await page.goto("/home");
+  // Click the sidebar "Create" button (it's a SidebarMenuButton with tooltip="Create").
+  await page.getByRole("button", { name: /^create$/i }).first().click();
+  await page.getByRole("menuitem", { name: /item ?\/? ?asset/i }).click();
   await expect(page.getByRole("dialog", { name: /create item/i })).toBeVisible();
 }
 
@@ -54,7 +48,7 @@ test.describe("Camera capture dialog", () => {
     await expect(page.getByRole("button", { name: /take photos/i })).toBeVisible();
     await page.getByRole("button", { name: /take photos/i }).click();
 
-    await expect(page.getByRole("dialog", { name: /camera/i })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: /take photos/i })).toBeVisible();
     // Live preview <video> element should be present and have a stream.
     await expect(page.locator("video[autoplay]")).toBeVisible();
   });
@@ -105,7 +99,7 @@ test.describe("Camera capture dialog", () => {
 
     await page.getByRole("button", { name: /done/i }).click();
 
-    await expect(page.getByRole("dialog", { name: /camera/i })).toBeHidden();
+    await expect(page.getByRole("dialog", { name: /take photos/i })).toBeHidden();
     // No photos pushed to the Create Item modal.
     await expect(page.getByText(/uploaded photo|primary photo/i)).toHaveCount(0);
   });
@@ -125,7 +119,7 @@ test.describe("Camera capture dialog", () => {
     await expect(page.getByTestId("captured-thumbnail")).toHaveCount(3);
 
     await page.getByRole("button", { name: /done/i }).click();
-    await expect(page.getByRole("dialog", { name: /camera/i })).toBeHidden();
+    await expect(page.getByRole("dialog", { name: /take photos/i })).toBeHidden();
 
     // Now the CreateModal photo strip should have 3 entries.
     // (Existing CreateModal renders each as <img alt="Uploaded Photo">)
@@ -147,7 +141,7 @@ test.describe("Camera capture dialog", () => {
 
     await page.getByRole("button", { name: /^cancel$/i }).click();
 
-    await expect(page.getByRole("dialog", { name: /camera/i })).toBeHidden();
+    await expect(page.getByRole("dialog", { name: /take photos/i })).toBeHidden();
     await expect(page.locator("img[alt*='Uploaded' i]")).toHaveCount(0);
   });
 
