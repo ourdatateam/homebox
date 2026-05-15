@@ -26,6 +26,7 @@
       "removed": "Member removed",
       "role": "Role"
     },
+<<<<<<< HEAD
     "no_collections": {
       "create": "Create a new collection",
       "join": "Join an existing collection",
@@ -59,6 +60,355 @@
           "import_failed": "Import failed. Please try again later.",
           "import_success": "Import successful!",
           "please_select_file": "Please select a file to import."
+=======
+    "components": {
+        "app": {
+            "create_modal": {
+                "createAndAddAnother": "Use {shiftKey} + {enterKey} to create and add another.",
+                "enter": "Enter",
+                "shift": "Shift"
+            },
+            "import_dialog": {
+                "change_warning": "Behavior for imports with existing import_refs has changed. If an import_ref is present in the CSV file, the \nitem will be updated with the values in the CSV file.",
+                "description": "Import a CSV file containing your items, labels, and locations. See documentation for more information on the \nrequired format.",
+                "title": "Import CSV File",
+                "toast": {
+                    "import_failed": "Import failed. Please try again later.",
+                    "import_success": "Import successful!",
+                    "please_select_file": "Please select a file to import."
+                }
+            },
+            "outdated": {
+                "current_version": "Current Version",
+                "dismiss": "Dismiss",
+                "latest_version": "Latest Version",
+                "new_version_available": "New Version Available",
+                "new_version_available_link": "Click here to view the release notes"
+            }
+        },
+        "collection": {
+            "create_modal": {
+                "name_label": "Collection Name",
+                "title": "Create Collection",
+                "toast": {
+                    "already_creating": "Already creating a collection",
+                    "create_failed": "Failed to create collection",
+                    "create_success": "Collection created",
+                    "please_enter_name": "Please enter a collection name"
+                }
+            },
+            "invite_create_modal": {
+                "toast": {
+                    "invalid_expiry_missing": "Please choose an expiration date and time.",
+                    "invalid_expiry_past": "Expiration date must be in the future.",
+                    "invalid_uses": "Uses must be a number between 1 and 100."
+                }
+            },
+            "join_modal": {
+                "invite_code_label": "Collection Invite Code",
+                "invites_should_look_like": "Invites should look like:",
+                "join": "Join Collection",
+                "no_invite_code_create_one": "No invite code? Create a new collection instead",
+                "title": "Join Collection",
+                "toast": {
+                    "already_joining": "Already joining a collection",
+                    "join_failed": "Failed to join collection",
+                    "join_success": "Collection joined",
+                    "please_enter_valid_join_code": "Please enter a valid collection invite code"
+                }
+            },
+            "selector": {
+                "collection_options": "Collection Options",
+                "create_collection": "Create New Collection",
+                "join_collection": "Join Existing Collection",
+                "no_collection_found": "No collection found",
+                "search_collections": "Search Collections…",
+                "select_collection": "Select Collection",
+                "your_collections": "Your Collections"
+            }
+        },
+        "color_selector": {
+            "clear": "Clear color",
+            "color": "Color",
+            "no_color": "No color",
+            "no_color_selected": "No color selected",
+            "randomize": "Randomize color"
+        },
+        "form": {
+            "password": {
+                "toggle_show": "Toggle Password Show"
+            },
+            "min_length": "min {min}"
+        },
+        "global": {
+            "copy_text": {
+                "continue": "Continue",
+                "documentation": "documentation",
+                "failed_to_copy": "Failed to copy text to clipboard",
+                "https_required": "because HTTPS is required",
+                "learn_more": "Learn more in our"
+            },
+            "date_time": {
+                "ago": "{0} ago",
+                "days": "days",
+                "hour": "hour",
+                "hours": "hours",
+                "in": "in {0}",
+                "just-now": "just now",
+                "last-month": "last month",
+                "last-week": "last week",
+                "last-year": "last year",
+                "minute": "minute",
+                "minutes": "minutes",
+                "months": "months",
+                "next-month": "next month",
+                "next-week": "next week",
+                "next-year": "next year",
+                "second": "second",
+                "seconds": "seconds",
+                "tomorrow": "tomorrow",
+                "week": "week",
+                "weeks": "weeks",
+                "years": "years",
+                "yesterday": "yesterday"
+            },
+            "label_maker": {
+                "browser_print": "Print from Browser",
+                "confirm_description": "Are you sure you want to print this label?",
+                "download": "Download Label",
+                "print": "Print label",
+                "server_print": "Print on Server",
+                "titles": "Labels",
+                "toast": {
+                    "load_status_failed": "Failed to load status",
+                    "print_failed": "Failed to print label",
+                    "print_success": "Label printed"
+                }
+            },
+            "page_qr_code": {
+                "page_url": "Page URL",
+                "qr_tooltip": "Show QR Code"
+            },
+            "password_score": {
+                "password_strength": "Password Strength"
+            }
+        },
+        "item": {
+            "attachments_list": {
+                "download": "Download",
+                "open_new_tab": "Open in new tab"
+            },
+            "create_modal": {
+                "clear_template": "Clear Template",
+                "delete_photo": "Delete photo",
+                "item_description": "Item Description",
+                "item_name": "Item Name",
+                "item_photo": "Item Photo 📷",
+                "item_quantity": "Item Quantity",
+                "parent_item": "Parent Item",
+                "product_tooltip_input_barcode": "Autofill with a manually provided barcode",
+                "product_tooltip_scan_barcode": "Autofill with a barcode from 📷",
+                "rotate_photo": "Rotate photo",
+                "set_as_primary_photo": "Set as { isPrimary, select, true {non-} false {} other {}}primary photo",
+                "title": "Create Item",
+                "toast": {
+                    "already_creating": "Already creating an item",
+                    "create_failed": "Couldn't create item",
+                    "create_success": "Item created",
+                    "failed_load_parent": "Failed to load parent item - please select manually",
+                    "no_canvas_support": "Your browser doesn't support canvas operations",
+                    "please_select_location": "Please select a location.",
+                    "rotate_failed": "Failed to rotate image: { error }",
+                    "rotate_process_failed": "Failed to process rotated image",
+                    "some_photos_failed": "{count, plural, =0 {No photos to upload.} =1 {1 photo failed to upload.} other {Some photos failed to upload.}}",
+                    "upload_failed": "Failed to upload photo: { photoName }",
+                    "upload_success": "{count, plural, =0 {No photos uploaded.} =1 {Photo uploaded successfully.} other {All photos uploaded successfully.}}",
+                    "uploading_photos": "{count, plural, =0 {No photos to upload} =1 {Uploading 1 photo…} other {Uploading {count} photos…}}"
+                },
+                "upload_photos": "Upload Photos",
+                "uploaded": "Uploaded Photo"
+            },
+            "product_import": {
+                "barcode": "Product's barcode",
+                "db_source": "DB source",
+                "error_exception": "Exception occured while retrieving item barcode: ",
+                "error_invalid_barcode": "Invalid barcode provided",
+                "error_not_found": "No product found with given barcode.",
+                "import_selected": "Import selected",
+                "search_item": "Search product",
+                "title": "Import product"
+            },
+            "selector": {
+                "clear": "Clear Item Selection",
+                "no_results": "No Results Found",
+                "placeholder": "Select…",
+                "search_placeholder": "Type to search…",
+                "searching": "Searching…"
+            },
+            "view": {
+                "change_details": {
+                    "add_tags": "Add Tags",
+                    "failed_to_update_item": "Failed to update item",
+                    "remove_tags": "Remove Tags",
+                    "title": "Change Item Details"
+                },
+                "selectable": {
+                    "card": "Card",
+                    "items": "Items",
+                    "no_items": "No Items to Display",
+                    "select_all": "Select All",
+                    "select_card": "Select Card",
+                    "select_row": "Select Row",
+                    "table": "Table"
+                },
+                "table": {
+                    "dropdown": {
+                        "actions": "Actions",
+                        "change_location": "Change Location",
+                        "change_location_success": "Location Changed",
+                        "change_tags": "Change Tags",
+                        "change_tags_success": "Tags Changed",
+                        "create_maintenance_item": "Create Maintenance Entry for Item",
+                        "create_maintenance_selected": "Create Maintenance Entry for Selected Items",
+                        "create_maintenance_success": "Maintenance Entrys Created",
+                        "delete_confirmation": "Are you sure you want to delete the selected items? This action cannot be undone.",
+                        "delete_item": "Delete Item",
+                        "delete_selected": "Delete Selected Items",
+                        "download_csv": "Download Table as CSV",
+                        "download_json": "Download Table as JSON",
+                        "duplicate_item": "Duplicate Item",
+                        "duplicate_selected": "Duplicate Selected Items",
+                        "error_deleting": "Error Deleting Item",
+                        "error_duplicating": "Error Duplicating Item",
+                        "open_menu": "Open menu",
+                        "open_multi_tab_warning": "For security reasons browsers do not allow multiple tabs to be opened at once by default, to change this please follow the documentation:",
+                        "toggle_expand": "Toggle Expand",
+                        "view_item": "View item",
+                        "view_items": "View items"
+                    },
+                    "headers": "Headers",
+                    "page": "Page",
+                    "quick_actions": "Enable Quick Actions & Selection",
+                    "rows_per_page": "Rows per page",
+                    "selected_rows": "{selected} of {total} rows selected.",
+                    "table_settings": "Table Settings",
+                    "view_item": "View Item"
+                }
+            }
+        },
+        "location": {
+            "create_modal": {
+                "location_description": "Location Description",
+                "location_name": "Location Name",
+                "location_photo": "Location Photo 📷",
+                "title": "Create Location",
+                "toast": {
+                    "already_creating": "Already creating a location",
+                    "create_failed": "Couldn't create location",
+                    "create_success": "Location created"
+                }
+            },
+            "selector": {
+                "clear": "Clear Location Selection",
+                "no_location_found": "No location found",
+                "parent_location": "Parent Location",
+                "search_location": "Search Locations",
+                "select_location": "Select a Location"
+            },
+            "tree": {
+                "no_locations": "No locations available. Use the Create button to add a new location."
+            }
+        },
+        "quick_menu": {
+            "no_results": "No results found.",
+            "shortcut_hint": "Use the number keys to quickly select an action."
+        },
+        "search": {
+            "filter": {
+                "search_placeholder": "Search…"
+            }
+        },
+        "tag": {
+            "create_modal": {
+                "tag_color": "Tag Color",
+                "tag_description": "Tag Description",
+                "tag_icon": "Tag Icon",
+                "tag_name": "Tag Name",
+                "tag_parent": "Parent Tag",
+                "title": "Create Tag",
+                "toast": {
+                    "already_creating": "Already creating a tag",
+                    "create_failed": "Couldn't create tag",
+                    "create_success": "Tag created",
+                    "tag_name_too_long": "Tag name must not be longer than 50 characters"
+                }
+            },
+            "selector": {
+                "select_tags": "Select Tags",
+                "no_tags_found": "No tags found",
+                "clear": "Clear"
+            }
+        },
+        "template": {
+            "apply_template": "Apply a template",
+            "card": {
+                "delete": "Delete template",
+                "duplicate": "Duplicate template",
+                "edit": "Edit template"
+            },
+            "confirm_delete": "Delete this template?",
+            "create_modal": {
+                "title": "Create Template"
+            },
+            "detail": {
+                "default_values": "Default Values",
+                "updated": "Updated"
+            },
+            "edit_modal": {
+                "title": "Edit Template"
+            },
+            "empty_value": "(empty)",
+            "form": {
+                "custom_fields": "Custom Fields",
+                "default_item_values": "Default Item Values",
+                "default_location": "Default Location",
+                "default_value": "Default Value",
+                "field_name": "Field Name",
+                "item_description": "Item Description",
+                "item_name": "Item Name",
+                "lifetime_warranty": "Lifetime Warranty",
+                "location": "Location",
+                "manufacturer": "Manufacturer",
+                "model_number": "Model Number",
+                "no_custom_fields": "No custom fields.",
+                "template_description": "Template Description",
+                "template_name": "Template Name"
+            },
+            "hide_defaults": "Hide defaults",
+            "save_as_template": "Save as Template",
+            "selector": {
+                "clear": "Clear Template Selection",
+                "label": "Template (Optional)",
+                "not_found": "No template found",
+                "search": "Search templates…",
+                "select": "Select template…"
+            },
+            "show_defaults": "Show defaults",
+            "toast": {
+                "applied": "Template \"{name}\" applied",
+                "create_failed": "Failed to create template",
+                "created": "Template created",
+                "delete_failed": "Failed to delete template",
+                "deleted": "Template deleted",
+                "duplicate_failed": "Failed to duplicate template",
+                "duplicated": "Template duplicated as \"{name}\"",
+                "load_failed": "Failed to load template details",
+                "saved_as_template": "Item saved as template \"{name}\"",
+                "update_failed": "Failed to update template",
+                "updated": "Template updated"
+            },
+            "using_template": "Using template: {name}"
+>>>>>>> upstream/main
         }
       },
       "outdated": {
